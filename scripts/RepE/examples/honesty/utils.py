@@ -70,6 +70,50 @@ def honesty_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, use
         'test': {'data': test_data, 'labels': [[1,0]] * len(test_data)}
     }
 
+def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, user_tag: str = "", assistant_tag: str = "", seed: int = 0) -> dict:
+    """
+    Processes data to create training and testing datasets based on sycophancy.
+
+    Args:
+    - data_path (str): Path to the CSV containing the data.
+    - tokenizer (PreTrainedTokenizer): Tokenizer to tokenize statements.
+    - user_tag (str): Instruction template user tag.
+    - assistant_tag (str): Instruction template assistant tag.
+    - seed (int): Random seed for reproducibility.
+
+    Returns:
+    - Dict containing train and test data with labels.
+    """
+
+    # Setting the seed for reproducibility
+    random.seed(seed)
+
+    # Load the data
+    df = pd.read_csv(data_path)
+    sycophantic_statements = df[df['label'] == 0]['statement'].values.tolist()
+    non_sycophantic_statements = df[df['label'] == 1]['statement'].values.tolist()
+
+    # Process statements
+    processed_statements = []
+    for statement in sycophantic_statements + non_sycophantic_statements:
+        tokens = tokenizer.tokenize(statement)
+        truncated_statement = tokenizer.convert_tokens_to_string(tokens)
+        processed_statements.append(f"{user_tag} {assistant_tag} " + truncated_statement)
+
+    # Split into training and testing data
+    ntrain = int(len(processed_statements) * 0.8)  # 80% for training
+    train_data = processed_statements[:ntrain]
+    test_data = processed_statements[ntrain:]
+
+    # Create labels
+    train_labels = [0] * len(sycophantic_statements[:ntrain]) + [1] * len(non_sycophantic_statements[:ntrain])
+    test_labels = [0] * len(sycophantic_statements[ntrain:]) + [1] * len(non_sycophantic_statements[ntrain:])
+
+    return {
+        'train': {'data': train_data, 'labels': train_labels},
+        'test': {'data': test_data, 'labels': test_labels}
+    }
+
 def plot_detection_results(input_ids, rep_reader_scores_dict, THRESHOLD, start_answer_token=":"):
 
     cmap=LinearSegmentedColormap.from_list('rg',["r", (255/255, 255/255, 224/255), "g"], N=256)
