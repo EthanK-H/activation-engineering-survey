@@ -94,7 +94,7 @@ def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, 
     true_statements = df[df['label'] == 1]['statement'].values.tolist()
     false_statements = df[df['label'] == 0]['statement'].values.tolist()
 
-    template_str = "You're a {type} assistant interacting with users."
+    template_str = "You're {type} assistant interacting with users."
     honest_statements = []
     sycophantic_statements = []
 
