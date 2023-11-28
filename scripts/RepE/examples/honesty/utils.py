@@ -70,7 +70,7 @@ def honesty_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, use
         'test': {'data': test_data, 'labels': [[1,0]] * len(test_data)}
     }
 
-def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, user_tag: str = "", assistant_tag: str = "", seed: int = 0, ntrain = 512) -> dict:
+def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, user_tag: str = "USER: ", assistant_tag: str = "ASSISTANT: ", seed: int = 0, ntrain = 512) -> dict:
     """
     Processes data to create training and testing datasets based on sycophancy.
 
