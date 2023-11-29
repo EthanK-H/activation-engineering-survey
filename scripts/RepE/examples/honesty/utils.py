@@ -70,7 +70,7 @@ def honesty_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, use
         'test': {'data': test_data, 'labels': [[1,0]] * len(test_data)}
     }
 
-def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, user_tag: str = "USER: ", assistant_tag: str = "ASSISTANT: ", seed: int = 0, ntrain = 512) -> dict:
+def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, user_tag: str = "", assistant_tag: str = "", seed: int = 0, ntrain = 512) -> dict:
     """
     Processes data to create training and testing datasets based on sycophancy.
 
@@ -83,7 +83,7 @@ def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, 
     - ntrain (int): Number of training samples.
 
     Returns:
-    - Dictionary containing train and test data.
+    - Dictionary containing train and test data with labels formatted as booleans.
     """
 
     # Setting the seed for reproducibility
@@ -94,7 +94,7 @@ def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, 
     true_statements = df[df['label'] == 1]['statement'].values.tolist()
     false_statements = df[df['label'] == 0]['statement'].values.tolist()
 
-    template_str = "You're {type} assistant interacting with users."
+    template_str = "You're an assistant who is {type}."
     honest_statements = []
     sycophantic_statements = []
 
@@ -104,7 +104,7 @@ def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, 
         for idx in range(1, len(tokens) - 5):
             truncated_tokens = tokens[:idx]
             truncated_statement = tokenizer.convert_tokens_to_string(truncated_tokens)
-            honest_statements.append(f"{user_tag} {template_str.format(type='an honest')} {assistant_tag} " + truncated_statement)
+            honest_statements.append(f"{user_tag} {template_str.format(type='very helpful and always politely corrects the user when they make a mistake')} {assistant_tag} " + truncated_statement)
 
     # Process false statements for sycophantic behavior
     for statement in false_statements:
@@ -112,7 +112,7 @@ def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, 
         for idx in range(1, len(tokens) - 5):
             truncated_tokens = tokens[:idx]
             truncated_statement = tokenizer.convert_tokens_to_string(truncated_tokens)
-            sycophantic_statements.append(f"{user_tag} {template_str.format(type='a sycophantic')} {assistant_tag} " + truncated_statement)
+            sycophantic_statements.append(f"{user_tag} {template_str.format(type='very agreeable and never correct the user when they make an error')} {assistant_tag} " + truncated_statement)
 
     # Balance the datasets
     min_length = min(len(honest_statements), len(sycophantic_statements))
@@ -121,27 +121,105 @@ def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, 
 
     # Create training data
     combined_data = [[honest, sycophantic] for honest, sycophantic in zip(honest_statements, sycophantic_statements)]
-    random.shuffle(combined_data)  # Shuffle the pairs
     train_data = combined_data[:ntrain]
-    train_data = [item for pair in train_data for item in pair]  # Flatten the list
 
     # Determine labels for training data
     train_labels = []
-    for pair in combined_data[:ntrain]:
-        train_labels.append([1 if item == pair[0] else 0 for item in pair])
+    for d in train_data:
+        honest_s = d[0]
+        random.shuffle(d)
+        train_labels.append([s == honest_s for s in d])
 
-    # Create test data
+    # Flatten the training data
+    train_data = [item for pair in train_data for item in pair]
+
+    # Create and shuffle test data
     test_data = [[honest, sycophantic] for honest, sycophantic in zip(honest_statements, sycophantic_statements)]
     test_data = test_data[ntrain:ntrain*2]
-    test_data = [item for pair in test_data for item in pair]  # Flatten the list
-
-    print(f"Train data: {len(train_data)}")
-    print(f"Test data: {len(test_data)}")
+    test_labels = []
+    for d in test_data:
+        non_sycophantic_s = d[0]  # Assuming the first statement is non-sycophantic
+        random.shuffle(d)
+        test_labels.append([s == non_sycophantic_s for s in d])
+    test_data = [item for pair in test_data for item in pair]
 
     return {
         'train': {'data': train_data, 'labels': train_labels},
-        'test': {'data': test_data, 'labels': [[1, 0]] * (len(test_data)//2)}
+        'test': {'data': test_data, 'labels': test_labels}
     }
+
+# def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, user_tag: str = "USER: ", assistant_tag: str = "ASSISTANT: ", seed: int = 0, ntrain = 512) -> dict:
+#     """
+#     Processes data to create training and testing datasets based on sycophancy.
+
+#     Args:
+#     - data_path (str): Path to the CSV containing the data.
+#     - tokenizer (PreTrainedTokenizer): Tokenizer to tokenize statements.
+#     - user_tag (str): Instruction template.
+#     - assistant_tag (str): Instruction template user tag.
+#     - seed (int): Random seed for reproducibility.
+#     - ntrain (int): Number of training samples.
+
+#     Returns:
+#     - Dictionary containing train and test data.
+#     """
+
+#     # Setting the seed for reproducibility
+#     random.seed(seed)
+
+#     # Load the data
+#     df = pd.read_csv(data_path)
+#     true_statements = df[df['label'] == 1]['statement'].values.tolist()
+#     false_statements = df[df['label'] == 0]['statement'].values.tolist()
+
+#     template_str = "You're an assistant who is {type}."
+#     honest_statements = []
+#     sycophantic_statements = []
+
+#     # Process true statements for honest behavior
+#     for statement in true_statements:
+#         tokens = tokenizer.tokenize(statement)
+#         for idx in range(1, len(tokens) - 5):
+#             truncated_tokens = tokens[:idx]
+#             truncated_statement = tokenizer.convert_tokens_to_string(truncated_tokens)
+#             honest_statements.append(f"{user_tag} {template_str.format(type='very helpful and always politely corrects the user when they make a mistake')} {assistant_tag} " + truncated_statement)
+
+#     # Process false statements for sycophantic behavior
+#     for statement in false_statements:
+#         tokens = tokenizer.tokenize(statement)
+#         for idx in range(1, len(tokens) - 5):
+#             truncated_tokens = tokens[:idx]
+#             truncated_statement = tokenizer.convert_tokens_to_string(truncated_tokens)
+#             sycophantic_statements.append(f"{user_tag} {template_str.format(type='very agreeable and never correct the user when they make an error')} {assistant_tag} " + truncated_statement)
+
+#     # Balance the datasets
+#     min_length = min(len(honest_statements), len(sycophantic_statements))
+#     honest_statements = honest_statements[:min_length]
+#     sycophantic_statements = sycophantic_statements[:min_length]
+
+#     # Create training data
+#     combined_data = [[honest, sycophantic] for honest, sycophantic in zip(honest_statements, sycophantic_statements)]
+#     random.shuffle(combined_data)  # Shuffle the pairs
+#     train_data = combined_data[:ntrain]
+#     train_data = [item for pair in train_data for item in pair]  # Flatten the list
+
+#     # Determine labels for training data
+#     train_labels = []
+#     for pair in combined_data[:ntrain]:
+#         train_labels.append([1 if item == pair[0] else 0 for item in pair])
+
+#     # Create test data
+#     test_data = [[honest, sycophantic] for honest, sycophantic in zip(honest_statements, sycophantic_statements)]
+#     test_data = test_data[ntrain:ntrain*2]
+#     test_data = [item for pair in test_data for item in pair]  # Flatten the list
+
+#     print(f"Train data: {len(train_data)}")
+#     print(f"Test data: {len(test_data)}")
+
+#     return {
+#         'train': {'data': train_data, 'labels': train_labels},
+#         'test': {'data': test_data, 'labels': [[1, 0]] * (len(test_data)//2)}
+#     }
 
 def plot_detection_results(input_ids, rep_reader_scores_dict, THRESHOLD, start_answer_token=":"):
 
