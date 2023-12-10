@@ -18,7 +18,7 @@ def get_model_and_tokenizer(model_name, token=None, cache_dir=None, load_model=T
     tokenizer.pad_token = tokenizer.eos_token
     
     if load_model:
-        model = Llama27BHelper(token=token)
+        model = Llama27BHelper(token=token, cache_dir=cache_dir)
     else:
         model = None
     
@@ -48,20 +48,19 @@ class BlockOutputWrapper(torch.nn.Module):
 
 
 class Llama27BHelper:
-    def __init__(self, pretrained_model="meta-llama/Llama-2-7b-hf", token=None):
+    def __init__(self, pretrained_model="meta-llama/Llama-2-7b-hf", token=None, cache_dir=None):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.tokenizer = AutoTokenizer.from_pretrained(pretrained_model, use_auth_token=token)
-        self.model = AutoModelForCausalLM.from_pretrained(pretrained_model, use_auth_token=token).to(self.device) # gets the model weights
+        self.model = AutoModelForCausalLM.from_pretrained(pretrained_model, use_auth_token=token, cache_dir=cache_dir, torch_dtype=torch.float16).to(self.device) # gets the model weights
         for i, layer in enumerate(self.model.model.layers): # layer X will be specified, so you go from first layer to X layer
         # actual transformer layers are inside self.model.model.layers
             self.model.model.layers[i] = BlockOutputWrapper(layer)
 
-    def generate_text(self, prompt, max_length=100):
+    def generate_text(self, prompt, max_length=100): # TODO: does this work for a batch greater than 1??
         inputs = self.tokenizer(prompt, return_tensors="pt")
+        max_length += inputs['input_ids'].shape[-1]
         generate_ids = self.model.generate(inputs.input_ids.to(self.device), max_length=max_length)
         batch_decoded = self.tokenizer.batch_decode(generate_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
-        print(len(batch_decoded))
-        print(batch_decoded.shape)
         return batch_decoded[0]
 
     def get_logits(self, tokens):

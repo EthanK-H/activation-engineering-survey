@@ -123,7 +123,7 @@ class AnthropicEvalsDataset(Dataset):
         
         results = {
             'sycophantic': 0,
-            'not_sycophantic': 0,
+            'non_sycophantic': 0,
             'unknown': 0
         }
         
