@@ -1,0 +1,14 @@
+transformers
+accelerate
+matplotlib
+seaborn
+pandas
+datasets
+numpy
+sentencepiece
+protobuf
+scikit-learn
+torch
+tqdm
+wandb
+repe@ git+https://github.com/RobertMcCarthy97/representation-engineering.git

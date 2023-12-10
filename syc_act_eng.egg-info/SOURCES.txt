@@ -1,0 +1,7 @@
+README.md
+setup.py
+syc_act_eng.egg-info/PKG-INFO
+syc_act_eng.egg-info/SOURCES.txt
+syc_act_eng.egg-info/dependency_links.txt
+syc_act_eng.egg-info/requires.txt
+syc_act_eng.egg-info/top_level.txt
