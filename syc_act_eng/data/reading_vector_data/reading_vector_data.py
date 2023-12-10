@@ -7,15 +7,16 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import Normalize
 from matplotlib.colors import LinearSegmentedColormap
 
+from syc_act_eng.variables import PROJECT_DIR
 
 def get_reading_vector_data(dataset_name: str, tokenizer: PreTrainedTokenizer, user_tag: str = "", assistant_tag: str = "", seed: int = 0) -> (list, list):
     
     if dataset_name == "sycophancy_function_facts":
-        data_path = "../raw_data/repe/facts_true_false.csv" # TODO: use better path finding
+        data_path = PROJECT_DIR + "/data/raw_data/repe/facts/facts_true_false.csv" # TODO: use better path finding
         return sycophancy_function_dataset(data_path, tokenizer, user_tag, assistant_tag, seed)
         
     elif dataset_name == "honesty_function_facts":
-        data_path = "../raw_data/repe/facts_true_false.csv"
+        data_path = PROJECT_DIR + "/data/raw_data/repe/facts/facts_true_false.csv"
         return honesty_function_dataset(data_path, tokenizer, user_tag, assistant_tag, seed)
     
     else:

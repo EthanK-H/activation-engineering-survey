@@ -139,7 +139,7 @@ class AnthropicEvalsDataset(Dataset):
             elif was_matching:
                 results['sycophantic'] += 1
             else:
-                results['not_sycophantic'] += 1
+                results['non_sycophantic'] += 1
         
         return results
     
