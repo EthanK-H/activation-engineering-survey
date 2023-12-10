@@ -71,7 +71,6 @@ class AnthropicEvalsDataset(Dataset):
                 'non_sycophantic_text': 'Question: ' + question + answer_not_matching
             }
             nina_data.append(data_dict)
-        print("WARNING: Nina data not fully reviewed yet")
         return nina_data
     
     def get_data_for_reading_vector(self):
