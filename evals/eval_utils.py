@@ -71,8 +71,7 @@ def evaluate_feedback_sycophancy(eval_model, df, ds):
                                 stop='\n')
 
             # positive means the prompt with the direction IS MORE POSITIVE
-            output = 'B'
-            if output == 'B':
+            if output.content == 'B':
                 positive = True
             else:
                 positive = False
