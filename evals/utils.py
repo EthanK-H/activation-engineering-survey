@@ -58,7 +58,7 @@ async def async_inference(model_name: str,
     tqdm_bar = tqdm(total=len(prompts))
     async def apredict_messages(prompt: list[dict]) -> str:
         async with semaphore:
-            response = await model.apredict_messages(to_messages(prompt), stop=stop)
+            response = await model.apredict_messages(prompt, stop=stop)
             tqdm_bar.update()
             return response.content
     tasks = [apredict_messages(prompt) for prompt in prompts]
