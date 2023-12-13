@@ -19,6 +19,9 @@ setup(
         "tqdm",
         "wandb",
         'repe@git+https://github.com/RobertMcCarthy97/representation-engineering.git'
+        "python-dotenv",
+        "langchain",
+        "openai",
     ],
     dependency_links=[
         'git+https://github.com/RobertMcCarthy97/representation-engineering.git#egg=repe'
