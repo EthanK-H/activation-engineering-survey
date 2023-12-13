@@ -10,6 +10,8 @@ from syc_act_eng.data.eval_data.pablo_evals.eval_utils import evaluate_feedback_
 USER_ROLE = "\n[INST]"
 AI_ROLE = "\n[/INST]"
 
+EVAL_MODEL = "gpt-3.5-turbo"
+
 class Dataset:
     
     def __init__(self, type):
@@ -74,7 +76,7 @@ class FeedbackSycophancyDataset(Dataset):
 
         self.current_split = 'test'
 
-        # self._compute_prompts()
+        self._compute_prompts()
 
 
     def _compute_prompts(self, user_tag='User: ', assistant_tag='Assistant: '):
@@ -151,20 +153,32 @@ class FeedbackSycophancyDataset(Dataset):
         return nina_data
     
     def evaluate_answers(self, model_answers):
-        # convert to dataframe
-        df = pd.DataFrame()
+        # Create an empty list to store rows
+        rows = []
+        
+        # Iterate over model answers and create a dictionary for each row
         for i in range(len(model_answers)):
-            df = df.append({
+            row = {
                 'prompt': model_answers[i]['eval_infos']['prompt'],
                 'direction': model_answers[i]['eval_infos']['direction'],
                 'question': model_answers[i]['eval_infos']['question'],
                 'comment': model_answers[i]['model_answer']
-            })
+            }
+            rows.append(row)
+        
+        # Convert the list of dictionaries to a DataFrame
+        df = pd.DataFrame(rows)
+        df.columns = ['prompt', 'direction', 'question', 'comment']
         df = df.set_index('question')
-        results = evaluate_feedback_sycophancy(eval_model='davinci', df=df, ds=self)
+        
+        print(df.head())
+
+        # Evaluate feedback sycophancy
+        results = evaluate_feedback_sycophancy(eval_model=EVAL_MODEL, df=df, ds=self)
         
         print(results)
         print(results.groupby('direction')['positive'].mean())
+
     
 
 class AnswerSycophancyDataset(Dataset):
