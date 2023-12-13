@@ -3,7 +3,7 @@ import pandas as pd
 
 from tqdm import tqdm
 
-import utils
+from syc_act_eng.data.eval_data.pablo_evals import utils
 
 #### ANSWER SYCOPHANCY
 

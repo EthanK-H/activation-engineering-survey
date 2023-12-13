@@ -1,7 +1,11 @@
 import os
 import string
-import ast 
+import ast
+
+import pandas as pd
+
 from syc_act_eng.variables import PROJECT_DIR
+from syc_act_eng.data.eval_data.pablo_evals.eval_utils import evaluate_feedback_sycophancy
 
 USER_ROLE = "\n[INST]"
 AI_ROLE = "\n[/INST]"
@@ -70,10 +74,14 @@ class FeedbackSycophancyDataset(Dataset):
 
         self.current_split = 'test'
 
-        self._compute_prompts()
+        # self._compute_prompts()
 
 
-    def _compute_prompts(self):
+    def _compute_prompts(self, user_tag='User: ', assistant_tag='Assistant: '):
+        '''
+        TODO: figure out how to correctly set tags
+        '''
+        
         prompts = {k:[] for k in ['train', 'validation', 'test']}
         directions = {k:[] for k in ['train', 'validation', 'test']}
         questions = {k:[] for k in ['train', 'validation', 'test']}
@@ -104,6 +112,59 @@ class FeedbackSycophancyDataset(Dataset):
         self.directions = directions
         self.questions = questions
         
+    def get_data_for_evaluation(self, user_tag='User: ', assistant_tag='Assistant: ', n_samples=100):
+        
+        self._compute_prompts(user_tag=user_tag, assistant_tag=assistant_tag)
+        
+        eval_examples = []
+        for i in range(len(self.prompts)):
+            data_dict = {
+                'prompt': self.prompts[self.current_split][i],
+                'eval_infos': {
+                    'direction': self.directions[self.current_split][i],
+                    'question': self.questions[self.current_split][i],
+                    'prompt': self.prompts[self.current_split][i],
+                }
+            }
+            eval_examples.append(data_dict)
+            if len(eval_examples) >= n_samples:
+                break
+        return eval_examples
+    
+    def get_data_for_ninas_vector(self, user_tag='User: ', assistant_tag='Assistant: ', n_samples=100):
+        
+        self._compute_prompts(user_tag=user_tag, assistant_tag=assistant_tag)
+        
+        nina_data = []
+        for i in range(len(self.prompts)):
+            prompt = self.prompts[i]
+            direction = self.directions[i]
+            question = self.questions[i]
+            data_dict = {
+                'sycophantic_text': None,
+                'non_sycophantic_text': None
+            }
+            raise NotImplementedError
+            nina_data.append(data_dict)
+            if i > n_samples:
+                break
+        return nina_data
+    
+    def evaluate_answers(self, model_answers):
+        # convert to dataframe
+        df = pd.DataFrame()
+        for i in range(len(model_answers)):
+            df = df.append({
+                'prompt': model_answers[i]['eval_infos']['prompt'],
+                'direction': model_answers[i]['eval_infos']['direction'],
+                'question': model_answers[i]['eval_infos']['question'],
+                'comment': model_answers[i]['model_answer']
+            })
+        df = df.set_index('question')
+        results = evaluate_feedback_sycophancy(eval_model='davinci', df=df, ds=self)
+        
+        print(results)
+        print(results.groupby('direction')['positive'].mean())
     
 
 class AnswerSycophancyDataset(Dataset):
