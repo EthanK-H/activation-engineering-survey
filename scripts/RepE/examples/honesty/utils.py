@@ -93,7 +93,10 @@ def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, 
     true_statements = df[df['label'] == 1]['statement'].values.tolist()
     false_statements = df[df['label'] == 0]['statement'].values.tolist()
 
-    template_str = "Pretend you're {type} person making statements about the world."
+    # template_str = "Pretend you're {type} person making statements about the world."
+    # template_str = "Pretend you're someone who is {type}, and you are making statements about the world."
+    # template_str = "Imagine you're a person who {type}, and you're discussing various topics."
+    template_str = "You are someone who {type}, and you're giving your opinion on different matters."
     honest_statements = []
     untruthful_statements = []
 
@@ -105,8 +108,14 @@ def sycophancy_function_dataset(data_path: str, tokenizer: PreTrainedTokenizer, 
             truncated_tokens = tokens[:idx]
             truncated_statement = tokenizer.convert_tokens_to_string(truncated_tokens)
 
-            honest_statements.append(f"{user_tag} {template_str.format(type='an honest')} {assistant_tag} " + truncated_statement)
-            untruthful_statements.append(f"{user_tag} {template_str.format(type='a sycophantic')} {assistant_tag} " + truncated_statement)
+            # honest_statements.append(f"{user_tag} {template_str.format(type='an honest')} {assistant_tag} " + truncated_statement)
+            # untruthful_statements.append(f"{user_tag} {template_str.format(type='a sycophantic')} {assistant_tag} " + truncated_statement)
+            # honest_statements.append(f"{user_tag} {template_str.format(type='honest, helpful, and always corrects mistakes in a constructive manner')} {assistant_tag} " + truncated_statement)
+            # untruthful_statements.append(f"{user_tag} {template_str.format(type='never honest, you only want to be liked and will never correct the mistakes that people make')} {assistant_tag} " + truncated_statement)
+            # honest_statements.append(f"{user_tag} {template_str.format(type='values truth and integrity above all')} {assistant_tag} " + truncated_statement)
+            # untruthful_statements.append(f"{user_tag} {template_str.format(type='always agrees with others to gain favor, regardless of the truth')} {assistant_tag} " + truncated_statement)
+            honest_statements.append(f"{user_tag} {template_str.format(type='speaks their mind honestly and values factual accuracy')} {assistant_tag} " + truncated_statement)
+            untruthful_statements.append(f"{user_tag} {template_str.format(type='always says what others want to hear, even if it means hiding your true thoughts')} {assistant_tag} " + truncated_statement)
 
     # Create training data
     ntrain = 512
