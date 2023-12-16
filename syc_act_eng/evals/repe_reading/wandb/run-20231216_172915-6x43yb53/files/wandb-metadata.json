@@ -1,0 +1,287 @@
+{
+    "os": "Linux-5.15.0-88-generic-x86_64-with-glibc2.35",
+    "python": "3.10.12",
+    "heartbeatAt": "2023-12-16T17:29:17.385049",
+    "startedAt": "2023-12-16T17:29:15.986773",
+    "docker": null,
+    "cuda": null,
+    "args": [],
+    "state": "running",
+    "program": "workspace/activation-engineering-survey/syc_act_eng/evals/repe_reading/exp_runner_reading.ipynb",
+    "codePathLocal": null,
+    "root": "/workspace/activation-engineering-survey",
+    "git": {
+        "remote": "https://github.com/EthanK-H/activation-engineering-survey.git",
+        "commit": "134c8fd976a4ba3e82c2986e950ee0c47f3f9871"
+    },
+    "email": null,
+    "host": "54583a86ec59",
+    "username": "root",
+    "executable": "/workspace/venvs/syc_act_eng/bin/python",
+    "cpu_count": 24,
+    "cpu_count_logical": 48,
+    "cpu_freq": {
+        "current": 1570.741041666667,
+        "min": 1500.0,
+        "max": 2300.0
+    },
+    "cpu_freq_per_core": [
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 3197.268,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 3197.026,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.07,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 2300.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        },
+        {
+            "current": 1500.0,
+            "min": 1500.0,
+            "max": 2300.0
+        }
+    ],
+    "disk": {
+        "/": {
+            "total": 20.0,
+            "used": 0.06416702270507812
+        }
+    },
+    "gpu": "NVIDIA RTX 4000 Ada Generation",
+    "gpu_count": 1,
+    "gpu_devices": [
+        {
+            "name": "NVIDIA RTX 4000 Ada Generation",
+            "memory_total": 21469593600
+        }
+    ],
+    "memory": {
+        "total": 251.55269622802734
+    }
+}

@@ -14,4 +14,7 @@ Requires-Dist: scikit-learn
 Requires-Dist: torch
 Requires-Dist: tqdm
 Requires-Dist: wandb
+Requires-Dist: python-dotenv
 Requires-Dist: repe@ git+https://github.com/RobertMcCarthy97/representation-engineering.git
+Requires-Dist: langchain
+Requires-Dist: openai

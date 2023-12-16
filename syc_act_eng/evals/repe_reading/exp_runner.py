@@ -23,20 +23,6 @@ from syc_act_eng.data.eval_data.utils import get_eval_dataset
 from syc_act_eng.utils import print_cuda_memory
 from syc_act_eng.variables import PROJECT_DIR
 
-# def load_model(self):
-#     if self.model_name_or_path == "mistralai/Mistral-7B-Instruct-v0.1":
-#         self.user_tag = "[INST]"
-#         self.assistant_tag = "[/INST]"
-
-#     else:
-#         raise ValueError("Unknown model name or path. Please use a model from https://huggingface.co/mistralai")
-    
-#     self.model = AutoModelForCausalLM.from_pretrained(self.model_name_or_path, torch_dtype=torch.float16, device_map="auto", use_auth_token=self.token, cache_dir=self.cache_dir)
-#     use_fast_tokenizer = "LlamaForCausalLM" not in self.model.config.architectures
-#     self.tokenizer = AutoTokenizer.from_pretrained(self.model_name_or_path, use_fast=use_fast_tokenizer, padding_side="left", legacy=False)
-#     self.tokenizer.pad_token_id = 0
-
-
 class RepeReadingEval():
     def __init__(
         self,
@@ -45,7 +31,7 @@ class RepeReadingEval():
         
         model_name_or_path = "mistralai/Mistral-7B-Instruct-v0.1", # model to use
         reading_vec_dataset_name = "sycophancy_function_facts", # dataset to get reading vectors from
-        eval_dataset_name = "feedback-math", # dataset to evaluate model on # OPTIONS=["anthropic_nlp", "feedback-math"]
+        # eval_dataset_name = "feedback-math", # dataset to evaluate model on # OPTIONS=["anthropic_nlp", "feedback-math"]
         eval_n_samples = 20, # number of samples to use for evaluation
         
         reading_batch_size = 8, # batch size for evaluation (keep low to avoid memory issues)
@@ -60,7 +46,6 @@ class RepeReadingEval():
         self.tokenizer = tokenizer
         self.model_name_or_path = model_name_or_path
         self.reading_vec_dataset_name = reading_vec_dataset_name
-        self.eval_dataset_name = eval_dataset_name
         self.eval_n_samples = eval_n_samples
         self.reading_batch_size = reading_batch_size
         self.eval_batch_size = eval_batch_size
@@ -88,15 +73,18 @@ class RepeReadingEval():
                 name="reading_" +self.reading_vec_dataset_name + "_" + self.eval_dataset_name,
             )
         
-        # reading vectors
-        self.init_reading_vector()
+        # # reading vectors
+        # self.init_reading_vector()
 
     def init_reading_vector(self):
         # calc reading vectors
+        print("calculating reading vectors...")
         self.calc_reading_vectors()
         # simple reading eval
+        print("doing simple reading eval...")
         self.simple_reading_eval()
         # test reading vectors
+        print("Visualize free generations...")
         sycophancy_scenarios = pd.read_csv(PROJECT_DIR + "/data/raw_data/sycophancy_scenarios.csv")['Statement'].values.tolist()
         inputs = []
         for scenario in sycophancy_scenarios:
@@ -176,16 +164,18 @@ class RepeReadingEval():
             
             results[layer] = cors
 
-        fig = plt.plot(hidden_layers, [results[layer] for layer in hidden_layers])
-        if self.do_wandb.track:
-            wandb.log({'reading_layers(?)': wandb.Image(fig)})
+        # Create a figure and axis
+        fig, ax = plt.subplots()
+        ax.plot(hidden_layers, [results[layer] for layer in hidden_layers])
+        if self.do_wandb_track:
+            wandb.log({'reading_layers(?)': wandb.Image(fig)}) # TODO: this isn't working
         else:
             plt.show()
         
     def eval(self, eval_dataset_name):
         self.eval_dataset_name = eval_dataset_name
         # Get evaluation dataset
-        self.load_eval_dataset(eval_dataset_name)
+        self.load_eval_dataset()
         
         # Log some examples of the dataset
         self.log_eval_dataset_examples(self.eval_data)
@@ -194,7 +184,7 @@ class RepeReadingEval():
         # randomly sample 5 examples from eval dataset
         samples = random.sample(self.eval_data, 5)
         sample_prompts = [sample['prompt'] for sample in samples]
-        self.generate_and_log(sample_prompts, name=self.eval_dataset_name + '/' + "eval_samples")
+        self.generate_and_log(sample_prompts, name=self.eval_dataset_name + '/' + "eval_samples") # TODO: this doesn't work...
         
         # Quantitative evaluations
         # no control
@@ -204,19 +194,18 @@ class RepeReadingEval():
         # negative control
         self.quantative_evaluate_model(activations=self.negative_activations, name=self.eval_dataset_name + '/' +"negative_control")
         
-        
     def load_eval_dataset(self):
         self.eval_dataset = get_eval_dataset(self.eval_dataset_name, n_samples=self.eval_n_samples)
         self.eval_data = self.eval_dataset.get_data_for_evaluation(user_tag=self.user_tag, assistant_tag=self.assistant_tag, n_samples=self.eval_n_samples)
         
-    def generate_and_log(self, inputs, name="temp"):
-        baseline_outputs = self.rep_control_pipeline(inputs, batch_size=4, max_new_tokens=self.max_new_tokens, do_sample=False)
-        positive_control_outputs = self.rep_control_pipeline(inputs, activations=self.positive_activations, batch_size=4, max_new_tokens=self.max_new_tokens, do_sample=False, repetition_penalty=1.1)
-        negative_control_outputs = self.rep_control_pipeline(inputs, activations=self.negative_activations, batch_size=4, max_new_tokens=self.max_new_tokens, do_sample=False, repetition_penalty=1.1)
+    def generate_and_log(self, inputs, name="temp", max_new_tokens=100):
+        baseline_outputs = self.rep_control_pipeline(inputs, batch_size=4, max_new_tokens=max_new_tokens, do_sample=False)
+        positive_control_outputs = self.rep_control_pipeline(inputs, activations=self.positive_activations, batch_size=4, max_new_tokens=max_new_tokens, do_sample=False, repetition_penalty=1.1)
+        negative_control_outputs = self.rep_control_pipeline(inputs, activations=self.negative_activations, batch_size=4, max_new_tokens=max_new_tokens, do_sample=False, repetition_penalty=1.1)
 
         if self.do_wandb_track:
             text_table = wandb.Table(columns=["prompt", "coeff", "no_control", "positive_control", "negative_control"])
-            for i in len(inputs):
+            for i in range(len(inputs)):
                 prompt = inputs[i]
                 coeff = self.coeff
                 no_control = baseline_outputs[i][0]['generated_text'].replace(prompt, "")
@@ -226,11 +215,13 @@ class RepeReadingEval():
             wandb.log({name: text_table})
         else:
             for i,s,p,n in zip(inputs, baseline_outputs, positive_control_outputs, negative_control_outputs):
+                print("===== Prompt =====")
+                print(i)
                 print("===== No Control =====")
                 print(s[0]['generated_text'].replace(i, ""))
-                print(f"===== + Honesty Control =====")
+                print(f"===== + Control =====")
                 print(p[0]['generated_text'].replace(i, ""))
-                print(f"===== - Honesty Control =====")
+                print(f"===== - Control =====")
                 print(n[0]['generated_text'].replace(i, ""))
                 print()
                 
@@ -244,7 +235,7 @@ class RepeReadingEval():
             inputs = [example['prompt']]
             
             outputs = self.rep_control_pipeline(inputs, activations=activations, batch_size=1, max_new_tokens=self.max_new_tokens, do_sample=False)
-            answer = outputs[0]['generated_text'].replace(inputs[0], "")
+            answer = outputs[0][0]['generated_text'].replace(inputs[0], "")
             
             result = {
                 'model_answer': answer,
@@ -263,7 +254,7 @@ class RepeReadingEval():
         
         for s in range(n_samples):
             # pick random even example idx
-            i = np.randint(len(reading_dataset['train']['labels']))
+            i = np.random.randint(len(reading_dataset['train']['labels']))
             # get
             i_data = i * 2
             pair_1 = i_data
@@ -287,7 +278,7 @@ class RepeReadingEval():
             
         for s in range(n_samples):
             # pick random even example idx
-            i = np.randint(len(eval_data))
+            i = np.random.randint(len(eval_data))
             
             # get sample
             sample = eval_data[i]
@@ -298,7 +289,6 @@ class RepeReadingEval():
             else:
                 print(f"\nExample {s}:")
                 print(f"  Prompt: {prompt}")
-                print(f"  Answer: {sample['answer_infos']}")
                 
         if self.do_wandb_track:
             wandb.log({self.eval_dataset_name + '/' + "eval_dataset_examples": text_table})

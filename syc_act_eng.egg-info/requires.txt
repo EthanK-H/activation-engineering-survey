@@ -11,4 +11,7 @@ scikit-learn
 torch
 tqdm
 wandb
+python-dotenv
 repe@ git+https://github.com/RobertMcCarthy97/representation-engineering.git
+langchain
+openai
