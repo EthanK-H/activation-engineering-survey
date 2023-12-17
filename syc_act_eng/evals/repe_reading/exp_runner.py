@@ -64,6 +64,9 @@ class RepeReadingEval():
         if self.model_name_or_path == "mistralai/Mistral-7B-Instruct-v0.1":
             self.user_tag = "[INST]"
             self.assistant_tag = "[/INST]"
+        elif self.model_name_or_path == "meta-llama/Llama-2-7b-hf":
+            self.user_tag = "USER:"
+            self.assistant_tag = "ASSISTANT:"
         else:
             raise ValueError("Unknown model name or path. Please use a model from https://huggingface.co/mistralai")
         
@@ -74,9 +77,9 @@ class RepeReadingEval():
         # calc reading vectors
         print("\nCalculating reading vectors...")
         self.calc_reading_vectors()
-        # simple reading eval
-        print("\nDoing simple reading eval...")
-        self.simple_reading_eval()
+        # # simple reading eval
+        # print("\nDoing simple reading eval...")
+        # self.simple_reading_eval()
         # test reading vectors
         print("\nVisualize free generations...")
         sycophancy_scenarios = pd.read_csv(PROJECT_DIR + "/data/raw_data/sycophancy_scenarios.csv")['Statement'].values.tolist()
@@ -120,14 +123,17 @@ class RepeReadingEval():
             tokenizer=self.tokenizer,
             layers=self.layer_id, 
             control_method=control_method)
-        
+
+        self.calc_activations(pos_coeff=self.coeff, neg_coeff=-self.coeff)
+
+    def calc_activations(self, pos_coeff, neg_coeff):
         self.positive_activations = {}
         for layer in self.layer_id:
-            self.positive_activations[layer] = torch.tensor(self.coeff * self.rep_reader.directions[layer] * self.rep_reader.direction_signs[layer]).to(self.model.device).half()
+            self.positive_activations[layer] = torch.tensor(pos_coeff * self.rep_reader.directions[layer] * self.rep_reader.direction_signs[layer]).to(self.model.device).half()
             
         self.negative_activations = {}
         for layer in self.layer_id:
-            self.negative_activations[layer] = torch.tensor(-self.coeff * self.rep_reader.directions[layer] * self.rep_reader.direction_signs[layer]).to(self.model.device).half()
+            self.negative_activations[layer] = torch.tensor(neg_coeff * self.rep_reader.directions[layer] * self.rep_reader.direction_signs[layer]).to(self.model.device).half()
         
     def simple_reading_eval(self):
         rep_token = -1
