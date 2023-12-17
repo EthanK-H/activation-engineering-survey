@@ -1,3 +1,11 @@
 *.pyc
 
 .env 
+
+.pkl
+
+.ipynb_checkpoints/
+
+wandb/
+
+syc_act_eng.egg-info/

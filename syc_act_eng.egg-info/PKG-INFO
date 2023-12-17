@@ -1,0 +1,20 @@
+Metadata-Version: 2.1
+Name: syc-act-eng
+Version: 0.1
+Requires-Dist: transformers
+Requires-Dist: accelerate
+Requires-Dist: matplotlib
+Requires-Dist: seaborn
+Requires-Dist: pandas
+Requires-Dist: datasets
+Requires-Dist: numpy
+Requires-Dist: sentencepiece
+Requires-Dist: protobuf
+Requires-Dist: scikit-learn
+Requires-Dist: torch
+Requires-Dist: tqdm
+Requires-Dist: wandb
+Requires-Dist: python-dotenv
+Requires-Dist: repe@ git+https://github.com/RobertMcCarthy97/representation-engineering.git
+Requires-Dist: langchain
+Requires-Dist: openai
