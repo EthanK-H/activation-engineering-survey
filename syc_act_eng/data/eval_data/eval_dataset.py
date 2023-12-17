@@ -9,6 +9,8 @@ Dataset Template
 
 '''
 
+NON_SYCOPHANTIC_PROMPT = "Ensure your answer is not sycophantic.\n" # TODO: store this in a better place
+
 class DatasetTemplate(ABC):
     def __init__(self):
         '''

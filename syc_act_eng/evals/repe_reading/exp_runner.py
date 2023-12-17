@@ -22,6 +22,7 @@ from syc_act_eng.data.reading_vector_data.reading_vector_data import get_reading
 from syc_act_eng.data.eval_data.utils import get_eval_dataset
 from syc_act_eng.utils import print_cuda_memory
 from syc_act_eng.variables import PROJECT_DIR
+from syc_act_eng.evals.utils import wandb_line_plot, log_bar_chart_to_wandb
 
 class RepeReadingEval():
     def __init__(
@@ -41,6 +42,7 @@ class RepeReadingEval():
         layer_id = list(range(-5, -18, -1)), # layers to apply reading vectors
         
         do_wandb_track = False,
+        verbose = True,
     ):
         self.model = model
         self.tokenizer = tokenizer
@@ -53,6 +55,7 @@ class RepeReadingEval():
         self.max_new_tokens = max_new_tokens
         self.layer_id = layer_id
         self.do_wandb_track = do_wandb_track
+        self.verbose = verbose
         
         # device
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -63,28 +66,19 @@ class RepeReadingEval():
             self.assistant_tag = "[/INST]"
         else:
             raise ValueError("Unknown model name or path. Please use a model from https://huggingface.co/mistralai")
-
-        # wandb
-        if self.do_wandb_track:
-            wandb.init(
-                project="sycophancy-activation-engineering",
-                entity="robertmccarthy11",
-                config=None, # TODO
-                name="reading_" +self.reading_vec_dataset_name + "_" + self.eval_dataset_name,
-            )
         
         # # reading vectors
         # self.init_reading_vector()
 
     def init_reading_vector(self):
         # calc reading vectors
-        print("calculating reading vectors...")
+        print("\nCalculating reading vectors...")
         self.calc_reading_vectors()
         # simple reading eval
-        print("doing simple reading eval...")
+        print("\nDoing simple reading eval...")
         self.simple_reading_eval()
         # test reading vectors
-        print("Visualize free generations...")
+        print("\nVisualize free generations...")
         sycophancy_scenarios = pd.read_csv(PROJECT_DIR + "/data/raw_data/sycophancy_scenarios.csv")['Statement'].values.tolist()
         inputs = []
         for scenario in sycophancy_scenarios:
@@ -164,12 +158,12 @@ class RepeReadingEval():
             
             results[layer] = cors
 
-        # Create a figure and axis
-        fig, ax = plt.subplots()
-        ax.plot(hidden_layers, [results[layer] for layer in hidden_layers])
         if self.do_wandb_track:
-            wandb.log({'reading_layers(?)': wandb.Image(fig)}) # TODO: this isn't working
+            wandb_line_plot(hidden_layers, [results[layer] for layer in hidden_layers], name=f'reading_{self.reading_vec_dataset_name}')
         else:
+            # Create a figure and axis
+            fig, ax = plt.subplots()
+            ax.plot(hidden_layers, [results[layer] for layer in hidden_layers])
             plt.show()
         
     def eval(self, eval_dataset_name):
@@ -189,6 +183,8 @@ class RepeReadingEval():
         # Quantitative evaluations
         # no control
         self.quantative_evaluate_model(activations=None, name=self.eval_dataset_name + '/' +"no_control")
+        # no control: non-sycophantic prompt
+        self.quantative_evaluate_model(activations=None, name=self.eval_dataset_name + '/' +"no_control_non_sycophantic_prompt", non_sycophantic_prompt=True)
         # positive control
         self.quantative_evaluate_model(activations=self.positive_activations, name=self.eval_dataset_name + '/' +"positive_control")
         # negative control
@@ -213,7 +209,8 @@ class RepeReadingEval():
                 negative_control = negative_control_outputs[i][0]['generated_text'].replace(prompt, "")
                 text_table.add_data(prompt, coeff, no_control, positive_control, negative_control)
             wandb.log({name: text_table})
-        else:
+        if self.verbose:
+            print('\n\n****' + name + '****\n\n')
             for i,s,p,n in zip(inputs, baseline_outputs, positive_control_outputs, negative_control_outputs):
                 print("===== Prompt =====")
                 print(i)
@@ -225,17 +222,22 @@ class RepeReadingEval():
                 print(n[0]['generated_text'].replace(i, ""))
                 print()
                 
-    def quantative_evaluate_model(self, activations=None, name="temp"):
+    def quantative_evaluate_model(self, activations=None, name="temp", non_sycophantic_prompt=False):
         # TODO: need to evaluate prompting also!!!
         
         model_answers = []
 
         # TODO: no need to do one example at a time?
         for example in tqdm(self.eval_data):
-            inputs = [example['prompt']]
+            if non_sycophantic_prompt:
+                inputs = [example['non_sycophantic_prompt']]
+                replace_str = example['non_syc_replace_str']
+            else:
+                inputs = [example['prompt']]
+                replace_str = example['replace_str']
             
             outputs = self.rep_control_pipeline(inputs, activations=activations, batch_size=1, max_new_tokens=self.max_new_tokens, do_sample=False)
-            answer = outputs[0][0]['generated_text'].replace(inputs[0], "")
+            answer = outputs[0][0]['generated_text'].replace(replace_str, "")
             
             result = {
                 'model_answer': answer,
@@ -246,11 +248,17 @@ class RepeReadingEval():
         results = self.eval_dataset.evaluate_answers(model_answers)
         
         if self.do_wandb_track:
-            wandb.log({f"{name}_quantative_evals": results})
+            log_bar_chart_to_wandb(results, f"{name}_quantative_evals")
+        if self.verbose:
+            print(f"\n\nEval results on {name}_quantative_evals:\n\n")
+            print(results)
+            print()
             
     def log_reading_dataset_examples(self, reading_dataset, n_samples=5):
         if self.do_wandb_track:
             text_table = wandb.Table(columns=['positive', 'negative'])
+        if self.verbose:
+            print('\n\n***** Reading Dataset Examples **** \n\n')
         
         for s in range(n_samples):
             # pick random even example idx
@@ -262,7 +270,7 @@ class RepeReadingEval():
             
             if self.do_wandb_track:
                 text_table.add_data(reading_dataset['train']['data'][pair_1], reading_dataset['train']['data'][pair_2])
-            else:
+            if self.verbose:
                 print(f"\nExample {s}:")
                 print(f"  Input 1: {reading_dataset['train']['data'][pair_1]}")
                 print(f"  Input 2: {reading_dataset['train']['data'][pair_2]}")
@@ -270,11 +278,12 @@ class RepeReadingEval():
                 
         if self.do_wandb_track:
             wandb.log({"reading_dataset_examples": text_table})
-                
     
     def log_eval_dataset_examples(self, eval_data, n_samples=5):
         if self.do_wandb_track:
             text_table = wandb.Table(columns=['prompt'])
+        if self.verbose:
+            print('\n\n***** Eval Dataset Examples **** \n\n')
             
         for s in range(n_samples):
             # pick random even example idx
@@ -286,7 +295,7 @@ class RepeReadingEval():
             
             if self.do_wandb_track:
                 text_table.add_data(prompt)
-            else:
+            if self.verbose:
                 print(f"\nExample {s}:")
                 print(f"  Prompt: {prompt}")
                 

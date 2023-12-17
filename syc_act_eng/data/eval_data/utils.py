@@ -5,6 +5,9 @@ def get_eval_dataset(dataset_name, n_samples=100):
     
     if dataset_name == "anthropic_nlp":
         return AnthropicEvalsNLPData(n_samples=n_samples)
+
+    if dataset_name == "anthropic_nlp_unsure":
+        return AnthropicEvalsNLPData(n_samples=n_samples, add_unsure_option=True)
     
     elif dataset_name == "feedback-math":
         return FeedbackSycophancyDataset("feedback-math")

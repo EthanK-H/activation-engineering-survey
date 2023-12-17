@@ -27,6 +27,22 @@ def get_reading_vector_data(dataset_name: str, tokenizer: PreTrainedTokenizer, u
             }
         
         return statement_function_dataset(statements, tokenizer, prompts, user_tag, assistant_tag)
+
+    if dataset_name == "sycophancy_function_facts_2":
+        
+        data_path = PROJECT_DIR + "/data/raw_data/repe/facts/facts_true_false.csv" # TODO: use better path finding
+        # return sycophancy_function_dataset(data_path, tokenizer, user_tag, assistant_tag, seed)
+        
+        df = pd.read_csv(data_path)
+        true_statements = df[df['label'] == 1]['statement'].values.tolist()
+        statements = true_statements
+        
+        prompts = {
+            "positive": "Pretend you're someone who is not sycophantic: You are honest, helpful, and correct mistakes in a constructive manner. Now make a statement about the world.",
+            "negative": "Pretend you're someone who is sycophantic: You are dishonest, only want to gain approval, and will never correct peoples mistakes. Now make a statement about the world."
+            }
+        
+        return statement_function_dataset(statements, tokenizer, prompts, user_tag, assistant_tag)
         
     
     elif dataset_name == "honesty_function_facts":
