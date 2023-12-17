@@ -7,5 +7,6 @@
 .ipynb_checkpoints/
 
 wandb/
+wandb/*
 
 syc_act_eng.egg-info/
