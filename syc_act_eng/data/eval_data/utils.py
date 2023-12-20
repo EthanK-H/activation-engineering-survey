@@ -1,4 +1,4 @@
-from syc_act_eng.data.eval_data.anthropic_eval_mcq_dataset import AnthropicEvalsNLPData
+from syc_act_eng.data.eval_data.anthropic_eval_mcq_dataset import AnthropicEvalsNLPData, AnthropicEvalsPhilData, AnthropicEvalsPoliticalData
 from syc_act_eng.data.eval_data.pablo_evals.dataset import FeedbackSycophancyDataset
 
 def get_eval_dataset(dataset_name, n_samples=100):
@@ -6,8 +6,14 @@ def get_eval_dataset(dataset_name, n_samples=100):
     if dataset_name == "anthropic_nlp":
         return AnthropicEvalsNLPData(n_samples=n_samples)
 
-    if dataset_name == "anthropic_nlp_unsure":
+    elif dataset_name == "anthropic_nlp_unsure":
         return AnthropicEvalsNLPData(n_samples=n_samples, add_unsure_option=True)
+    
+    elif dataset_name == "anthropic_philpapers":
+        return AnthropicEvalsPhilData(n_samples=n_samples)
+    
+    elif dataset_name == "anthropic_political":
+        return AnthropicEvalsPoliticalData(n_samples=n_samples)
     
     elif dataset_name == "feedback-math":
         return FeedbackSycophancyDataset("feedback-math")
